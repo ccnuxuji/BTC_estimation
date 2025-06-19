@@ -3,7 +3,6 @@ from btc_mining_calculator import BTCMiningCalculator
 import time
 import pandas as pd
 import numpy as np
-import plotly.express as px
 import matplotlib.pyplot as plt
 
 # 定义常见矿机型号及其参数
