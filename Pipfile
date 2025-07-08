@@ -10,6 +10,7 @@ numpy = "*"
 matplotlib = "*"
 requests = "*"
 python-dotenv = "*"
+colorama = "*"
 
 [dev-packages]
 

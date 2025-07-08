@@ -776,14 +776,14 @@ if calculate_button:
                         if break_even_price is not None:
                             break_even_data.append({
                                 "Miner Model": miner_name,
-                                "Break-even Price ($/kWh)": break_even_price,
+                                "Break-even Price ($/kWh)": f"${break_even_price:.3f}",
                                 "Status": f"Break-even at ${break_even_price:.3f}/kWh"
                             })
                             st.info(f"🔵 {miner_name}: Break-even at ${break_even_price:.3f}/kWh")
                         else:
                             break_even_data.append({
                                 "Miner Model": miner_name,
-                                "Break-even Price ($/kWh)": ">0.1",
+                                "Break-even Price ($/kWh)": ">$0.100",
                                 "Status": "Always profitable in 0-0.1 $/kWh range"
                             })
                             st.success(f"🟢 {miner_name}: Always profitable in the given range")
