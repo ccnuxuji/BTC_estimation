@@ -149,7 +149,7 @@ class BTCMiningCalculator:
 
     def calculate_roi(self, hashrate_th, power_watts, electricity_cost_kwh, hardware_cost, 
                      pool_fee_percent=2.0, maintenance_cost_yearly=0, hardware_depreciation_yearly=0,
-                     block_reward=None, use_cache=False):
+                     block_reward=None, annual_utilization_rate=100.0, use_cache=False):
         """
         计算投资回报分析
         :param hashrate_th: 算力（TH/s）
@@ -160,6 +160,7 @@ class BTCMiningCalculator:
         :param maintenance_cost_yearly: 年度维护成本（美元）
         :param hardware_depreciation_yearly: 年度硬件折旧（美元）
         :param block_reward: 区块奖励（BTC）
+        :param annual_utilization_rate: 年利用率（%），表示矿机实际运行时间占全年的百分比
         :param use_cache: 是否使用缓存的价格和难度数据
         :return: 投资分析报告
         """
@@ -176,20 +177,29 @@ class BTCMiningCalculator:
             return None
 
         print(f"当前BTC价格: ${btc_price:,.2f}")
+        print(f"年利用率: {annual_utilization_rate:.1f}%")
+        
+        # 计算利用率系数
+        utilization_factor = annual_utilization_rate / 100.0
         
         daily_btc = self.calculate_mining_revenue(hashrate_th, use_cache)
         # 扣除矿池手续费
         daily_btc = daily_btc * (1 - pool_fee_percent / 100)
         
-        daily_revenue_usd = daily_btc * btc_price
-        daily_power_cost = self.calculate_power_cost(power_watts, electricity_cost_kwh)
+        # 应用利用率到收益计算
+        daily_btc_actual = daily_btc * utilization_factor
+        daily_revenue_usd = daily_btc_actual * btc_price
         
-        # 计算每日维护和折旧成本
+        daily_power_cost = self.calculate_power_cost(power_watts, electricity_cost_kwh)
+        # 应用利用率到电费计算
+        daily_power_cost_actual = daily_power_cost * utilization_factor
+        
+        # 计算每日维护和折旧成本（不受利用率影响）
         daily_maintenance_cost = maintenance_cost_yearly / 365
         daily_depreciation = hardware_depreciation_yearly / 365
         
         # 计算总日常成本
-        daily_total_cost = daily_power_cost + daily_maintenance_cost + daily_depreciation
+        daily_total_cost = daily_power_cost_actual + daily_maintenance_cost + daily_depreciation
         daily_profit = daily_revenue_usd - daily_total_cost
 
         # 计算回报周期（天）
@@ -202,9 +212,12 @@ class BTCMiningCalculator:
         return {
             'BTC当前价格': btc_price,
             '网络难度': network_difficulty,
-            '每日BTC收益(含矿池费)': daily_btc,
+            '年利用率': annual_utilization_rate,
+            '每日BTC收益(满载)': daily_btc,
+            '每日BTC收益(含矿池费)': daily_btc_actual,
             '每日收入(USD)': daily_revenue_usd,
-            '每日电费(USD)': daily_power_cost,
+            '每日电费(满载)': daily_power_cost,
+            '每日电费(USD)': daily_power_cost_actual,
             '每日维护成本(USD)': daily_maintenance_cost,
             '每日折旧(USD)': daily_depreciation,
             '每日总成本(USD)': daily_total_cost,
